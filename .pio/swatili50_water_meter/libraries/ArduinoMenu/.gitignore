@@ -1,0 +1,15 @@
+.pioenvs
+.clang_complete
+.gcc-flags.json
+.piolibdeps
+src/main.cpp
+/debug
+lib
+.travis.yml
+!/.travis.yml
+platformio.ini
+/TODO.txt
+/classes.odg
+.gitignore
+!/.gitignore
+*.odg
