@@ -16,15 +16,18 @@
 
 #include <TimerOne.h>
 
-#include <menu.h>
-#include <menuIO/liquidCrystalOut.h>
+#include <Wire.h>
+#include <menu.h>//menu macros and objects
+#include <menuIO/lcdOut.h>//malpartidas lcd menu output
+//#include <menuIO/liquidCrystalOut.h>
 #include <menuIO/serialOut.h>
 #include <menuIO/serialIn.h>
 #include <menuIO/keyIn.h>
 #include <menuIO/chainStream.h>
 using namespace Menu;
 
-#include <LiquidCrystal.h>
+//#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
 
 //#include "A4988.h"
 

@@ -24,4 +24,16 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>framework-arduinoavr</name>
+			<type>2</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Users/d7rob/.platformio/packages/framework-arduinoavr</locationURI>
+		</link>
+		<link>
+			<name>libraries</name>
+			<type>2</type>
+			<location>C:/GIT/swatili-50/libraries</location>
+		</link>
+	</linkedResources>
 </projectDescription>
