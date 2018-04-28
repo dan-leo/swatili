@@ -20,21 +20,21 @@ volatile byte led_state = LOW;
 boolean pulseProcessedFlag = true;
 boolean menuIdling = false;
 boolean valveOpen = false;
+//boolean preLitreReset = true;
 
 
 // Create a DS1302 object.
 //extern DS1302 rtc;
 extern Time t;
-extern Time tStart;
-extern Time tCutoff;
+extern Time tReset;
 
-Button btBack(buttonPins[0], true);
-Button btDown(buttonPins[1], true);
-Button btUp(buttonPins[2], true);
-Button btEnter(buttonPins[3], true);
+Button btBack(buttonPins[7], true);
+Button btDown(buttonPins[6], true);
+Button btUp(buttonPins[5], true);
+Button btEnter(buttonPins[4], true);
 
-Button btReset(buttonPins[4], true);
-Button btValve(buttonPins[5], true);
+Button btReset(buttonPins[3], true);
+Button btValve(buttonPins[2], true);
 
 void process_pulse();
 
@@ -80,19 +80,19 @@ MENU(timeSubmenu,"Time setup",doNothing,anyEvent,noStyle
   ,EXIT("<Back")
 );
 
-MENU(timeStartSubmenu,"Time start",doNothing,anyEvent,noStyle
-  ,FIELD(tStart.hr,"Hour","",0,23,5,1,updateTime,exitEvent,wrapStyle)
-  ,FIELD(tStart.min,"Minute","",0,59,10,1,updateTime,exitEvent,wrapStyle)
-  ,FIELD(tStart.sec,"Second","",0,59,10,1,updateTime,exitEvent,wrapStyle)
+MENU(resetLitresSubmenu,"T reset litres",doNothing,anyEvent,noStyle
+  ,FIELD(tReset.hr,"Hour","",0,23,5,1,updateTime,exitEvent,wrapStyle)
+  ,FIELD(tReset.min,"Minute","",0,59,10,1,updateTime,exitEvent,wrapStyle)
+  ,FIELD(tReset.sec,"Second","",0,59,10,1,updateTime,exitEvent,wrapStyle)
   ,EXIT("<Back")
 );
 
-MENU(timeCutoffSubmenu,"Time cutoff",doNothing,anyEvent,noStyle
-  ,FIELD(tCutoff.hr,"Hour","",0,23,5,1,updateTime,exitEvent,wrapStyle)
-  ,FIELD(tCutoff.min,"Minute","",0,59,10,1,updateTime,exitEvent,wrapStyle)
-  ,FIELD(tCutoff.sec,"Second","",0,59,10,1,updateTime,exitEvent,wrapStyle)
-  ,EXIT("<Back")
-);
+//MENU(timeCutoffSubmenu,"Time cutoff",doNothing,anyEvent,noStyle
+//  ,FIELD(tCutoff.hr,"Hour","",0,23,5,1,updateTime,exitEvent,wrapStyle)
+//  ,FIELD(tCutoff.min,"Minute","",0,59,10,1,updateTime,exitEvent,wrapStyle)
+//  ,FIELD(tCutoff.sec,"Second","",0,59,10,1,updateTime,exitEvent,wrapStyle)
+//  ,EXIT("<Back")
+//);
 
 MENU(resetTimeSubmenu,"Reset Time",doNothing,anyEvent,noStyle
   ,OP("Yes",resetTime,enterEvent)
@@ -103,10 +103,11 @@ MENU(resetTimeSubmenu,"Reset Time",doNothing,anyEvent,noStyle
 MENU(mainMenu,"Main menu",doNothing,noEvent,wrapStyle
   ,FIELD(pulseCount,"Pulses","",0,0,0,0,doNothing,updateEvent,wrapStyle)
   ,FIELD(milliLitres,"Volume","ml",0,0,0,0,doNothing,updateEvent,wrapStyle)
-  ,FIELD(litreLimit,"Limit","l",0,50,10,1,doNothing,updateEvent,wrapStyle)
+  ,FIELD(litreLimit,"Limit","l",0,50,1,0.1,doNothing,updateEvent,wrapStyle)
+  ,FIELD(k,"k constant","",0,3,0.1,0.01,doNothing,updateEvent,wrapStyle)
   ,SUBMENU(timeSubmenu)
-  ,SUBMENU(timeStartSubmenu)
-  ,SUBMENU(timeCutoffSubmenu)
+  ,SUBMENU(resetLitresSubmenu)
+//  ,SUBMENU(timeCutoffSubmenu)
   ,SUBMENU(resetTimeSubmenu)
   ,EXIT("<Back")
 );
@@ -170,7 +171,7 @@ void loop ()
 			//_20ms = millis(),
 			_10ms = millis(),
 			_100ms = millis(),
-			_1000ms = millis();
+			_500ms = millis();
 
 	digitalWrite(LED_BUILTIN, led_state);
 
@@ -205,33 +206,36 @@ void loop ()
 		_100ms = millis();
 	}
 
-	if (millis() - _1000ms > 1000) {
+	if (millis() - _500ms > 500) {
 
-		boolean tSGreaterC = tStart.hr >= tCutoff.hr &&
-				tStart.min >= tCutoff.min &&
-				tStart.sec >= tCutoff.sec;
+//		boolean tSGreaterC = tStart.hr >= tCutoff.hr &&
+//				tStart.min >= tCutoff.min &&
+//				tStart.sec >= tCutoff.sec;
+//
+//		boolean tLessThanStart = t.hr <= tStart.hr &&
+//				t.min <= tStart.min &&
+//				t.sec <= tStart.sec;
+//
+		if (t.hr == tReset.hr &&
+				t.min == tReset.min &&
+				t.sec == tReset.sec) {
+			pulseCount = 0;
+			milliLitres = 0;
+		}
 
-		boolean tLessThanStart = t.hr <= tStart.hr &&
-				t.min <= tStart.min &&
-				t.sec <= tStart.sec;
-
-		boolean tGreaterThanCutoff = t.hr >= tCutoff.hr &&
-				t.min >= tCutoff.min &&
-				t.sec >= tCutoff.sec;
-
-		Serial << tSGreaterC << tLessThanStart << tGreaterThanCutoff << endl;
+//		Serial << tSGreaterC << tLessThanStart << tGreaterThanCutoff << endl;
 
 		// xyz + !x(y + z)
 		// !xy + !xz + yz
 		// 101
 
-		if ((tGreaterThanCutoff && tLessThanStart) ||
-			(!tSGreaterC && tLessThanStart) ||
-			(!tSGreaterC && tGreaterThanCutoff)) {
-			valveOpen = false;
-			digitalWrite(valveControlPin, valveOpen);
-		}
-		_1000ms = millis();
+//		if ((tGreaterThanCutoff && tLessThanStart && tGreaterThanCutoff) ||
+//			(!tSGreaterC && !tLessThanStart && !tGreaterThanCutoff)) {
+//			Serial << F("Time cutoff!") << endl;
+//			valveOpen = false;
+//			digitalWrite(valveControlPin, valveOpen);
+//		}
+		_500ms = millis();
 	}
 
 /*	if (millis() - _20ms > 20) {
