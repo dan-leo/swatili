@@ -23,8 +23,10 @@ boolean valveOpen = false;
 
 
 // Create a DS1302 object.
-extern DS1302 rtc;
+//extern DS1302 rtc;
 extern Time t;
+extern Time tStart;
+extern Time tCutoff;
 
 Button btBack(buttonPins[0], true);
 Button btDown(buttonPins[1], true);
@@ -78,6 +80,20 @@ MENU(timeSubmenu,"Time setup",doNothing,anyEvent,noStyle
   ,EXIT("<Back")
 );
 
+MENU(timeStartSubmenu,"Time start",doNothing,anyEvent,noStyle
+  ,FIELD(tStart.hr,"Hour","",0,23,5,1,updateTime,exitEvent,wrapStyle)
+  ,FIELD(tStart.min,"Minute","",0,59,10,1,updateTime,exitEvent,wrapStyle)
+  ,FIELD(tStart.sec,"Second","",0,59,10,1,updateTime,exitEvent,wrapStyle)
+  ,EXIT("<Back")
+);
+
+MENU(timeCutoffSubmenu,"Time cutoff",doNothing,anyEvent,noStyle
+  ,FIELD(tCutoff.hr,"Hour","",0,23,5,1,updateTime,exitEvent,wrapStyle)
+  ,FIELD(tCutoff.min,"Minute","",0,59,10,1,updateTime,exitEvent,wrapStyle)
+  ,FIELD(tCutoff.sec,"Second","",0,59,10,1,updateTime,exitEvent,wrapStyle)
+  ,EXIT("<Back")
+);
+
 MENU(resetTimeSubmenu,"Reset Time",doNothing,anyEvent,noStyle
   ,OP("Yes",resetTime,enterEvent)
   ,OP("No",doNothing,enterEvent)
@@ -89,6 +105,8 @@ MENU(mainMenu,"Main menu",doNothing,noEvent,wrapStyle
   ,FIELD(milliLitres,"Volume","ml",0,0,0,0,doNothing,updateEvent,wrapStyle)
   ,FIELD(litreLimit,"Limit","l",0,50,10,1,doNothing,updateEvent,wrapStyle)
   ,SUBMENU(timeSubmenu)
+  ,SUBMENU(timeStartSubmenu)
+  ,SUBMENU(timeCutoffSubmenu)
   ,SUBMENU(resetTimeSubmenu)
   ,EXIT("<Back")
 );
@@ -102,7 +120,7 @@ MENU_OUTPUTS(out, MAX_DEPTH
 NAVROOT(nav,mainMenu,MAX_DEPTH,in,out); //the navigation root object
 
 result resetTime(eventMask e, prompt &item) {
-	t = Time(2018, 4, 28, 03, 35, 00, Time::kSaturday);
+	t = Time(2018, 4, 28, 04, 48, 00, Time::kSaturday);
 	setup_rtc(t);
 	nav.idleOn(resetTime_alert);
 	return proceed;
@@ -126,8 +144,8 @@ void setup ()
 	Serial.begin(115200);
 	lcd.begin(16, 2);
 	lcd.setBacklight(HIGH);
-	lcd.setCursor(0, 0); lcd.println(F("Water Meter v0.1"));
-	lcd.setCursor(0, 1); lcd.println(F(" Andre van Dyk"));
+	lcd.setCursor(0, 0); lcd.print(F("Water Meter v0.1"));
+	lcd.setCursor(0, 1); lcd.print(F(" Andre van Dyk  "));
 	delay(500);
 
 	pinMode(LED_BUILTIN, OUTPUT);
@@ -147,11 +165,12 @@ void setup ()
 
 void loop ()
 {
-	static int _solenoid_state = 0,
+	static unsigned long _solenoid_state = 0,
 			//_50ms = millis(),
 			//_20ms = millis(),
 			_10ms = millis(),
-			_100ms = millis();
+			_100ms = millis(),
+			_1000ms = millis();
 
 	digitalWrite(LED_BUILTIN, led_state);
 
@@ -160,22 +179,22 @@ void loop ()
 		pulseProcessedFlag = false;
 	}
 
-	if (!btReset.check()) {
-		pulseCount = 0;
-		milliLitres = 0;
-	}
-
-	if (!btValve.check()) {
-		valveOpen = !valveOpen;
-		digitalWrite(valveControlPin, valveOpen);
-	}
-
 	if (milliLitres > litreLimit * 1000) {
 		valveOpen = false;
 		digitalWrite(valveControlPin, valveOpen);
 	}
 
 	if (millis() - _10ms > 10) {
+
+		if (!btReset.check()) {
+			pulseCount = 0;
+			milliLitres = 0;
+		}
+		if (!btValve.check()) {
+			valveOpen = !valveOpen;
+			digitalWrite(valveControlPin, valveOpen);
+		}
+
 		navigation(read_buttons());
 		nav.poll();
 		_10ms = millis();
@@ -184,6 +203,35 @@ void loop ()
 	if (millis() - _100ms > 100) {
 		idleRefresh();
 		_100ms = millis();
+	}
+
+	if (millis() - _1000ms > 1000) {
+
+		boolean tSGreaterC = tStart.hr >= tCutoff.hr &&
+				tStart.min >= tCutoff.min &&
+				tStart.sec >= tCutoff.sec;
+
+		boolean tLessThanStart = t.hr <= tStart.hr &&
+				t.min <= tStart.min &&
+				t.sec <= tStart.sec;
+
+		boolean tGreaterThanCutoff = t.hr >= tCutoff.hr &&
+				t.min >= tCutoff.min &&
+				t.sec >= tCutoff.sec;
+
+		Serial << tSGreaterC << tLessThanStart << tGreaterThanCutoff << endl;
+
+		// xyz + !x(y + z)
+		// !xy + !xz + yz
+		// 101
+
+		if ((tGreaterThanCutoff && tLessThanStart) ||
+			(!tSGreaterC && tLessThanStart) ||
+			(!tSGreaterC && tGreaterThanCutoff)) {
+			valveOpen = false;
+			digitalWrite(valveControlPin, valveOpen);
+		}
+		_1000ms = millis();
 	}
 
 /*	if (millis() - _20ms > 20) {

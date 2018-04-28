@@ -16,6 +16,8 @@
 
 DS1302 rtc(rtcCePin, rtcIoPin, rtcSclkPin);
 Time t = rtc.time();
+Time tStart = Time(2000, 1, 1, 4, 0, 0, Time::kMonday);
+Time tCutoff = Time(2000, 1, 1, 0, 0, 0, Time::kMonday);
 
 //namespace {
 
