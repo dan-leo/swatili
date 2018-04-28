@@ -28,33 +28,33 @@
 // can't assume that its in that state when a sketch starts (and the
 // LiquidCrystal constructor is called).
 
-LiquidCrystal::LiquidCrystal(uint8_t rs, uint8_t rw, uint8_t enable,
+LiquidCrystal_I2C::LiquidCrystal_I2C(uint8_t rs, uint8_t rw, uint8_t enable,
 			     uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,
 			     uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7)
 {
   init(0, rs, rw, enable, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-LiquidCrystal::LiquidCrystal(uint8_t rs, uint8_t enable,
+LiquidCrystal_I2C::LiquidCrystal_I2C(uint8_t rs, uint8_t enable,
 			     uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,
 			     uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7)
 {
   init(0, rs, 255, enable, d0, d1, d2, d3, d4, d5, d6, d7);
 }
 
-LiquidCrystal::LiquidCrystal(uint8_t rs, uint8_t rw, uint8_t enable,
+LiquidCrystal_I2C::LiquidCrystal_I2C(uint8_t rs, uint8_t rw, uint8_t enable,
 			     uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3)
 {
   init(1, rs, rw, enable, d0, d1, d2, d3, 0, 0, 0, 0);
 }
 
-LiquidCrystal::LiquidCrystal(uint8_t rs,  uint8_t enable,
+LiquidCrystal_I2C::LiquidCrystal_I2C(uint8_t rs,  uint8_t enable,
 			     uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3)
 {
   init(1, rs, 255, enable, d0, d1, d2, d3, 0, 0, 0, 0);
 }
 
-LiquidCrystal::LiquidCrystal(uint8_t i2caddr) {
+LiquidCrystal_I2C::LiquidCrystal_I2C(uint8_t i2caddr) {
   _i2cAddr = i2caddr;
 
   _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
@@ -72,7 +72,7 @@ LiquidCrystal::LiquidCrystal(uint8_t i2caddr) {
 }
 
 
-LiquidCrystal::LiquidCrystal(uint8_t data, uint8_t clock, uint8_t latch ) {
+LiquidCrystal_I2C::LiquidCrystal_I2C(uint8_t data, uint8_t clock, uint8_t latch ) {
   _i2cAddr = 255;
 
   _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
@@ -100,7 +100,7 @@ LiquidCrystal::LiquidCrystal(uint8_t data, uint8_t clock, uint8_t latch ) {
 }
 
 
-void LiquidCrystal::init(uint8_t fourbitmode, uint8_t rs, uint8_t rw, uint8_t enable,
+void LiquidCrystal_I2C::init(uint8_t fourbitmode, uint8_t rs, uint8_t rw, uint8_t enable,
 			 uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,
 			 uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7)
 {
@@ -135,7 +135,7 @@ void LiquidCrystal::init(uint8_t fourbitmode, uint8_t rs, uint8_t rw, uint8_t en
   begin(16, 1);  
 }
 
-void LiquidCrystal::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
+void LiquidCrystal_I2C::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   // check if i2c
   if (_i2cAddr != 255) {
     _i2c.begin(_i2cAddr);
@@ -229,19 +229,19 @@ void LiquidCrystal::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
 }
 
 /********** high level commands, for the user! */
-void LiquidCrystal::clear()
+void LiquidCrystal_I2C::clear()
 {
   command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
   delayMicroseconds(2000);  // this command takes a long time!
 }
 
-void LiquidCrystal::home()
+void LiquidCrystal_I2C::home()
 {
   command(LCD_RETURNHOME);  // set cursor position to zero
   delayMicroseconds(2000);  // this command takes a long time!
 }
 
-void LiquidCrystal::setCursor(uint8_t col, uint8_t row)
+void LiquidCrystal_I2C::setCursor(uint8_t col, uint8_t row)
 {
   int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
   if ( row > _numlines ) {
@@ -252,70 +252,70 @@ void LiquidCrystal::setCursor(uint8_t col, uint8_t row)
 }
 
 // Turn the display on/off (quickly)
-void LiquidCrystal::noDisplay() {
+void LiquidCrystal_I2C::noDisplay() {
   _displaycontrol &= ~LCD_DISPLAYON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
-void LiquidCrystal::display() {
+void LiquidCrystal_I2C::display() {
   _displaycontrol |= LCD_DISPLAYON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
 // Turns the underline cursor on/off
-void LiquidCrystal::noCursor() {
+void LiquidCrystal_I2C::noCursor() {
   _displaycontrol &= ~LCD_CURSORON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
-void LiquidCrystal::cursor() {
+void LiquidCrystal_I2C::cursor() {
   _displaycontrol |= LCD_CURSORON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
 // Turn on and off the blinking cursor
-void LiquidCrystal::noBlink() {
+void LiquidCrystal_I2C::noBlink() {
   _displaycontrol &= ~LCD_BLINKON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
-void LiquidCrystal::blink() {
+void LiquidCrystal_I2C::blink() {
   _displaycontrol |= LCD_BLINKON;
   command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
 // These commands scroll the display without changing the RAM
-void LiquidCrystal::scrollDisplayLeft(void) {
+void LiquidCrystal_I2C::scrollDisplayLeft(void) {
   command(LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVELEFT);
 }
-void LiquidCrystal::scrollDisplayRight(void) {
+void LiquidCrystal_I2C::scrollDisplayRight(void) {
   command(LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVERIGHT);
 }
 
 // This is for text that flows Left to Right
-void LiquidCrystal::leftToRight(void) {
+void LiquidCrystal_I2C::leftToRight(void) {
   _displaymode |= LCD_ENTRYLEFT;
   command(LCD_ENTRYMODESET | _displaymode);
 }
 
 // This is for text that flows Right to Left
-void LiquidCrystal::rightToLeft(void) {
+void LiquidCrystal_I2C::rightToLeft(void) {
   _displaymode &= ~LCD_ENTRYLEFT;
   command(LCD_ENTRYMODESET | _displaymode);
 }
 
 // This will 'right justify' text from the cursor
-void LiquidCrystal::autoscroll(void) {
+void LiquidCrystal_I2C::autoscroll(void) {
   _displaymode |= LCD_ENTRYSHIFTINCREMENT;
   command(LCD_ENTRYMODESET | _displaymode);
 }
 
 // This will 'left justify' text from the cursor
-void LiquidCrystal::noAutoscroll(void) {
+void LiquidCrystal_I2C::noAutoscroll(void) {
   _displaymode &= ~LCD_ENTRYSHIFTINCREMENT;
   command(LCD_ENTRYMODESET | _displaymode);
 }
 
 // Allows us to fill the first 8 CGRAM locations
 // with custom characters
-void LiquidCrystal::createChar(uint8_t location, uint8_t charmap[]) {
+void LiquidCrystal_I2C::createChar(uint8_t location, uint8_t charmap[]) {
   location &= 0x7; // we only have 8 locations 0-7
   command(LCD_SETCGRAMADDR | (location << 3));
   for (int i=0; i<8; i++) {
@@ -325,12 +325,12 @@ void LiquidCrystal::createChar(uint8_t location, uint8_t charmap[]) {
 
 /*********** mid level commands, for sending data/cmds */
 
-inline void LiquidCrystal::command(uint8_t value) {
+inline void LiquidCrystal_I2C::command(uint8_t value) {
   send(value, LOW);
 }
 
 #if ARDUINO >= 100
-inline size_t LiquidCrystal::write(uint8_t value) {
+inline size_t LiquidCrystal_I2C::write(uint8_t value) {
   send(value, HIGH);
   return 1;
 }
@@ -343,7 +343,7 @@ inline void LiquidCrystal::write(uint8_t value) {
 /************ low level data pushing commands **********/
 
 // little wrapper for i/o writes
-void  LiquidCrystal::_digitalWrite(uint8_t p, uint8_t d) {
+void  LiquidCrystal_I2C::_digitalWrite(uint8_t p, uint8_t d) {
   if (_i2cAddr != 255) {
     // an i2c command
     _i2c.digitalWrite(p, d);
@@ -363,7 +363,7 @@ void  LiquidCrystal::_digitalWrite(uint8_t p, uint8_t d) {
 }
 
 // Allows to set the backlight, if the LCD backpack is used
-void LiquidCrystal::setBacklight(uint8_t status) {
+void LiquidCrystal_I2C::setBacklight(uint8_t status) {
   // check if i2c or SPI
   if ((_i2cAddr != 255) || (_SPIclock != 255)) {
     _digitalWrite(7, status); // backlight is on pin 7
@@ -371,7 +371,7 @@ void LiquidCrystal::setBacklight(uint8_t status) {
 }
 
 // little wrapper for i/o directions
-void  LiquidCrystal::_pinMode(uint8_t p, uint8_t d) {
+void  LiquidCrystal_I2C::_pinMode(uint8_t p, uint8_t d) {
   if (_i2cAddr != 255) {
     // an i2c command
     _i2c.pinMode(p, d);
@@ -384,7 +384,7 @@ void  LiquidCrystal::_pinMode(uint8_t p, uint8_t d) {
 }
 
 // write either command or data, with automatic 4/8-bit selection
-void LiquidCrystal::send(uint8_t value, uint8_t mode) {
+void LiquidCrystal_I2C::send(uint8_t value, uint8_t mode) {
   _digitalWrite(_rs_pin, mode);
 
   // if there is a RW pin indicated, set it low to Write
@@ -400,7 +400,7 @@ void LiquidCrystal::send(uint8_t value, uint8_t mode) {
   }
 }
 
-void LiquidCrystal::pulseEnable(void) {
+void LiquidCrystal_I2C::pulseEnable(void) {
   _digitalWrite(_enable_pin, LOW);
   delayMicroseconds(1);    
   _digitalWrite(_enable_pin, HIGH);
@@ -409,7 +409,7 @@ void LiquidCrystal::pulseEnable(void) {
   delayMicroseconds(100);   // commands need > 37us to settle
 }
 
-void LiquidCrystal::write4bits(uint8_t value) {
+void LiquidCrystal_I2C::write4bits(uint8_t value) {
   if (_i2cAddr != 255) {
     uint8_t out = 0;
 
@@ -444,7 +444,7 @@ void LiquidCrystal::write4bits(uint8_t value) {
   }
 }
 
-void LiquidCrystal::write8bits(uint8_t value) {
+void LiquidCrystal_I2C::write8bits(uint8_t value) {
   for (int i = 0; i < 8; i++) {
     _pinMode(_data_pins[i], OUTPUT);
     _digitalWrite(_data_pins[i], (value >> i) & 0x01);

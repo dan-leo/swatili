@@ -1,24 +1,22 @@
 /*
- This sketch prints "Hello World!" to the LCD
- and shows the time.
- 
-  The circuit:
- * 5V to Arduino 5V pin
- * GND to Arduino GND pin
- * SCL to Analog #5
- * SDA to Analog #4
-*/
+ * lcd.ino
+ *
+ *  Created on: 25 Apr 2018
+ *      Author: d7rob
+ */
 
-// include the library code:
+
 #include <Arduino.h>
+
 #include <Wire.h>
-#include "LiquidCrystal_I2C_crowtail.h"
+
+#include <LiquidCrystal_I2C_crowtail.h>
 
 // Connect via i2c, default address #0 (A0-A2 not jumpered)
 LiquidCrystal lcd(0);
 
 void setup() {
-  // set up the LCD's number of rows and columns: 
+  // set up the LCD's number of rows and columns:
   lcd.begin(16, 2);
   // Print a message to the LCD.
   lcd.print("hello, world!");
@@ -36,4 +34,3 @@ void loop() {
   lcd.setBacklight(LOW);
   delay(1000);
 }
-

@@ -147,6 +147,7 @@
         #endif
         Used printMenu() const {
           trace(Serial<<"navRoot::printMenu"<<endl);
+//          Serial.println("navRoot::printMenu");
           if ((active().sysStyles()&_parentDraw)&&level)
             return out.printMenu(path[level-1]);
           else return out.printMenu(node());
@@ -162,11 +163,13 @@
         #endif
         inline void doInput() {doInput(in);}
         inline void doOutput() {
+//          Serial.println("navRoot::doOutput");
           if (!sleepTask) printMenu();
           else {
             idleChanged=false;//turn it off here so that sleepTask can force it on again
             out.idle(sleepTask,idling);
           }
+//          Serial.println("navRoot::doOutput ended!");
         }
         inline void poll() {doInput();doOutput();};//fire and forget mode
         void doNav(navCmd cmd);//fly by wire mode

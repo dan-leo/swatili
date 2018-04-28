@@ -114,17 +114,19 @@ result navNode::sysEvent(eventMask e,idx_t i) {
 
 void navRoot::doInput(menuIn& in) {
   trace(Serial<<"navRoot::doInput"<<endl);
+//  Serial.println("navRoot::doInput"); delay(1);
   if (sleepTask) {
     if (options->getCmdChar(enterCmd)==in.read()) idleOff();
   } else {
     idx_t inputBurstCnt=inputBurst+1;
     //if (in.available())
     while ((!sleepTask)&&in.available()&&(--inputBurstCnt)) {//if not doing something else and there is input
-      //Serial.print(".");
+//      Serial.print(".");
       navFocus->parseInput(node(),in);//deliver navigation input task to target...
     }
   }
-  trace(Serial<<"navRoot::doInput ended!"<<endl);
+//  trace(Serial<<"navRoot::doInput ended!"<<endl);
+//  Serial.println("navRoot::doInput ended!"); delay(1);
 }
 
 void navRoot::doNav(navCmd cmd) {

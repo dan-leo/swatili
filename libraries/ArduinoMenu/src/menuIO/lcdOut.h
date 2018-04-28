@@ -9,14 +9,17 @@
   #ifndef ARDUINO_SAM_DUE
     #include "../menu.h"
     #include <Wire.h>
-    #include <LCD.h>
+//    #include <LCD.h>
+    #include <LiquidCrystal_I2C_crowtail.h>
 
     namespace Menu {
 
       class lcdOut:public cursorOut {
         public:
-          LCD* device;
-          inline lcdOut(LCD* o,idx_t *t,panelsList &p,menuOut::styles s=menuOut::minimalRedraw)
+//          LCD* device;
+          LiquidCrystal_I2C* device;
+//          inline lcdOut(LCD* o,idx_t *t,panelsList &p,menuOut::styles s=menuOut::minimalRedraw)
+          inline lcdOut(LiquidCrystal_I2C* o,idx_t *t,panelsList &p,menuOut::styles s=menuOut::minimalRedraw)
             :cursorOut(t,p,s),device(o) {}
           size_t write(uint8_t ch) override {return device->write(ch);}
           void clear() override {

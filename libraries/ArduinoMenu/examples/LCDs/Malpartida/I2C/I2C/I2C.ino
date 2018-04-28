@@ -14,7 +14,7 @@ http://playground.arduino.cc/Code/LCD3wires
 #ifndef ARDUINO_SAM_DUE
 
   #include <Wire.h>
-  #include "../../../../../../LiquidCrystal_crowtail/LiquidCrystal_I2C_crowtail.h"//F. Malpartida LCD's driver
+  #include "LiquidCrystal_I2C.h"//F. Malpartida LCD's driver
   #include <menu.h>//menu macros and objects
   #include <menuIO/lcdOut.h>//malpartidas lcd menu output
   #include <menuIO/serialIn.h>//Serial input
