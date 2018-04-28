@@ -23,7 +23,8 @@ boolean valveOpen = false;
 
 
 // Create a DS1302 object.
-//DS1302 rtc(kCePin, kIoPin, kSclkPin);
+extern DS1302 rtc;
+extern Time t;
 
 Button btBack(buttonPins[0], true);
 Button btDown(buttonPins[1], true);
@@ -50,12 +51,45 @@ serialIn serial(Serial);
 menuIn* inputsList[]={&serial}; // more inputs can be added here.
 chainStream<1> in(inputsList); // 1 is the current number of inputs
 
-result idle(menuOut& o,idleEvent e);
+result idle(menuOut& o,idleEvent e) {
+	switch(e) {
+	    case idleStart: menuIdling = true; break;
+	    case idling: /*o.setCursor(0, 0); o.println(F("Water Meter v0.1"));*/ break;
+	    case idleEnd: menuIdling = false; break;
+	}
+	return proceed;
+}
+
+result resetTime(eventMask e, prompt &item);
+result resetTime_alert(menuOut& o,idleEvent e);
+result updateTime(eventMask e, navNode& nav, prompt &item) {
+	Serial << F("New time set!") << endl;
+	setup_rtc(t);
+	return proceed;
+}
+
+MENU(timeSubmenu,"Time setup",doNothing,anyEvent,noStyle
+  ,FIELD(t.yr,"Year","",2000,2099,10,1,updateTime,exitEvent,wrapStyle)
+  ,FIELD(t.mon,"Month","",1,12,1,0,updateTime,exitEvent,wrapStyle)
+  ,FIELD(t.date,"Date","",1,31,10,1,updateTime,exitEvent,wrapStyle)
+  ,FIELD(t.hr,"Hours","",0,23,5,1,updateTime,exitEvent,wrapStyle)
+  ,FIELD(t.min,"Minutes","",0,59,10,1,updateTime,exitEvent,wrapStyle)
+  ,FIELD(t.sec,"Seconds","",0,59,10,1,updateTime,exitEvent,wrapStyle)
+  ,EXIT("<Back")
+);
+
+MENU(resetTimeSubmenu,"Reset Time",doNothing,anyEvent,noStyle
+  ,OP("Yes",resetTime,enterEvent)
+  ,OP("No",doNothing,enterEvent)
+  ,EXIT("<Back")
+);
 
 MENU(mainMenu,"Main menu",doNothing,noEvent,wrapStyle
   ,FIELD(pulseCount,"Pulses","",0,0,0,0,doNothing,updateEvent,wrapStyle)
   ,FIELD(milliLitres,"Volume","ml",0,0,0,0,doNothing,updateEvent,wrapStyle)
   ,FIELD(litreLimit,"Limit","l",0,50,10,1,doNothing,updateEvent,wrapStyle)
+  ,SUBMENU(timeSubmenu)
+  ,SUBMENU(resetTimeSubmenu)
   ,EXIT("<Back")
 );
 
@@ -66,6 +100,22 @@ MENU_OUTPUTS(out, MAX_DEPTH
   ,NONE
 );
 NAVROOT(nav,mainMenu,MAX_DEPTH,in,out); //the navigation root object
+
+result resetTime(eventMask e, prompt &item) {
+	t = Time(2018, 4, 28, 03, 35, 00, Time::kSaturday);
+	setup_rtc(t);
+	nav.idleOn(resetTime_alert);
+	return proceed;
+}
+
+result resetTime_alert(menuOut& o,idleEvent e) {
+  if (e==idling) {
+    o.setCursor(0,0);
+    o.print("Time reset.");
+    o.setCursor(0,1); o.print("[enter] to cont.");
+  }
+  return proceed;
+}
 
 //##################################### end menu #####################################
 
@@ -98,13 +148,15 @@ void setup ()
 void loop ()
 {
 	static int _solenoid_state = 0,
-			_50ms = millis(),
-			_20ms = millis();
+			//_50ms = millis(),
+			//_20ms = millis(),
+			_10ms = millis(),
+			_100ms = millis();
 
 	digitalWrite(LED_BUILTIN, led_state);
 
 	if (pulseProcessedFlag) {
-
+		milliLitres = pulseCount * 2.25 * k;
 		pulseProcessedFlag = false;
 	}
 
@@ -123,7 +175,18 @@ void loop ()
 		digitalWrite(valveControlPin, valveOpen);
 	}
 
-	if (millis() - _20ms > 20) {
+	if (millis() - _10ms > 10) {
+		navigation(read_buttons());
+		nav.poll();
+		_10ms = millis();
+	}
+
+	if (millis() - _100ms > 100) {
+		idleRefresh();
+		_100ms = millis();
+	}
+
+/*	if (millis() - _20ms > 20) {
 		navigation(read_buttons());
 		nav.poll();
 		_20ms = millis();
@@ -132,21 +195,11 @@ void loop ()
 	if (millis() - _50ms > 50) {
 		idleRefresh();
 		_50ms = millis();
-	}
+	}*/
 }  // end of loop
-
-result idle(menuOut& o,idleEvent e) {
-	switch(e) {
-	    case idleStart: menuIdling = true; break;
-	    case idling: /*o.setCursor(0, 0); o.println(F("Water Meter v0.1"));*/ break;
-	    case idleEnd: menuIdling = false; break;
-	}
-	return proceed;
-}
 
 void process_pulse() {
   pulseCount++;
-  milliLitres = pulseCount * 2.25 * k;
   led_state = !led_state;
   pulseProcessedFlag = true;
 }
@@ -173,10 +226,12 @@ void idleRefresh() {
 			lcdi.buf[i].flush();
 		}
 
-		lcdi.buf[0] << F("") << milliLitres << F("ml ");
-		lcdi.buf[0] << F("") << pulseCount << F(" ");
-		lcdi.buf[1] << F("") << valveOpen << F(" ");
-		lcdi.buf[1] << F("") << litreLimit << F("l ");
+		lcdi.buf[0] << F("") << milliLitres << F("ml");
+		lcdi.buf[0] << F(" ") << pulseCount << F("");
+		lcdi.buf[0] << F(" ") << valveOpen << F("");
+		lcdi.buf[0] << F(" ") << litreLimit << F("l");
+
+		lcdi.buf[1] << F("") << printTime() << F(" ");
 
 		for (int i = 0; i < ROWS; i++) {
 			while (lcdi.buf[i].current_length() < COLS) lcdi.buf[i] << ' ';

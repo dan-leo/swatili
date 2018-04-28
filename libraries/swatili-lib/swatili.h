@@ -18,7 +18,7 @@
 
 #include <menu.h>//menu macros and objects
 //#include <menuIO/liquidCrystalOut.h>
-#include <menuIO/lcdOut.h>// crowtails lcd menu output
+#include <menuIO/lcdOut.h> // crowtails lcd menu output
 #include <menuIO/serialOut.h>
 #include <menuIO/serialIn.h>
 #include <menuIO/keyIn.h>
@@ -31,6 +31,15 @@ using namespace Menu;
 #include <Streaming.h>
 #include <button.h>
 #include <BufferSerial.h>
+
+// Set the appropriate digital I/O pin connections. These are the pin
+// assignments for the Arduino as well for as the DS1302 chip. See the DS1302
+// datasheet:
+//
+//   http://datasheets.maximintegrated.com/en/ds/DS1302.pdf
+#define rtcCePin 6    // Chip Enable
+#define rtcIoPin 5    // Input/Output
+#define rtcSclkPin 4  // Serial Clock
 
 #define pulseInterruptPin 2
 #define valveControlPin 3
@@ -60,18 +69,8 @@ public:
 };
 extern LCD_idler lcdi;
 
-
-// Set the appropriate digital I/O pin connections. These are the pin
-// assignments for the Arduino as well for as the DS1302 chip. See the DS1302
-// datasheet:
-//
-//   http://datasheets.maximintegrated.com/en/ds/DS1302.pdf
-//const int kCePin   = 8;  // Chip Enable
-//const int kIoPin   = 9;  // Input/Output
-//const int kSclkPin = 10;  // Serial Clock
-
-//void printTime();
-//void setup_rtc();
+const char * printTime();
+void setup_rtc(Time tm);
 
 //void setup_analog_comparator();
 //boolean service_trigger();
