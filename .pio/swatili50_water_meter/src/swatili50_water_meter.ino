@@ -13,7 +13,7 @@
 float k = 1;
 unsigned long pulseCount = 0;
 unsigned long milliLitres = 0;
-unsigned long litreLimit = 1;
+float litreLimit = 0.5;
 
 volatile byte led_state = LOW;
 
@@ -28,13 +28,13 @@ boolean valveOpen = false;
 extern Time t;
 extern Time tReset;
 
-Button btBack(buttonPins[7], true);
-Button btDown(buttonPins[6], true);
-Button btUp(buttonPins[5], true);
-Button btEnter(buttonPins[4], true);
+Button btBack(buttonPins[0], true);
+Button btDown(buttonPins[1], true);
+Button btUp(buttonPins[2], true);
+Button btEnter(buttonPins[3], true);
 
-Button btReset(buttonPins[3], true);
-Button btValve(buttonPins[2], true);
+Button btReset(buttonPins[4], true);
+Button btValve(buttonPins[5], true);
 
 void process_pulse();
 
@@ -103,7 +103,7 @@ MENU(resetTimeSubmenu,"Reset Time",doNothing,anyEvent,noStyle
 MENU(mainMenu,"Main menu",doNothing,noEvent,wrapStyle
   ,FIELD(pulseCount,"Pulses","",0,0,0,0,doNothing,updateEvent,wrapStyle)
   ,FIELD(milliLitres,"Volume","ml",0,0,0,0,doNothing,updateEvent,wrapStyle)
-  ,FIELD(litreLimit,"Limit","l",0,50,1,0.1,doNothing,updateEvent,wrapStyle)
+  ,FIELD(litreLimit,"Limit","l",0.0,50.0,1,0.1,doNothing,updateEvent,wrapStyle)
   ,FIELD(k,"k constant","",0,3,0.1,0.01,doNothing,updateEvent,wrapStyle)
   ,SUBMENU(timeSubmenu)
   ,SUBMENU(resetLitresSubmenu)
@@ -180,7 +180,7 @@ void loop ()
 		pulseProcessedFlag = false;
 	}
 
-	if (milliLitres > litreLimit * 1000) {
+	if (milliLitres * 1.0 > litreLimit * 1000) {
 		valveOpen = false;
 		digitalWrite(valveControlPin, valveOpen);
 	}
