@@ -5,22 +5,18 @@
  *      Author: d7rob
  */
 
-// Interfacing with the DS1302 timekeeping chip.
-//
-// Copyright (c) 2009, Matt Sparks
-// All rights reserved.
-//
-// http://quadpoint.org/projects/arduino-ds1302
-
 #include "swatili.h"
 
-DS1302 rtc(rtcCePin, rtcIoPin, rtcSclkPin);
-Time t = rtc.time();
-Time tReset = Time(2000, 1, 1, 4, 0, 0, Time::kSaturday);
+DS1302 rtc(rtcCePin, rtcIoPin, rtcSclkPin); /* real time clock */
+Time t = rtc.time(); /* system time */
+Time tReset = Time(2000, 1, 1, 4, 0, 0, Time::kSaturday); /* default daily pulse reset time */
 
 //namespace {
 
 void setup_rtc(Time tm) {
+	// Interfacing with the DS1302 timekeeping chip.
+	// Copyright (c) 2009, Matt Sparks. All rights reserved. http://quadpoint.org/projects/arduino-ds1302
+
 	// Initialize a new chip by turning off write protection and clearing the
 	// clock halt flag. These methods needn't always be called. See the DS1302
 	// datasheet for details.
@@ -63,7 +59,7 @@ const char * printTime() {
            t.hr, t.min, t.sec);
 
   // Print the formatted string to serial so we can see the time.
-//  Serial.print(buf);
+  //  Serial.print(buf);
   return buf;
 }
 

@@ -45,6 +45,7 @@ using namespace Menu;
 #define valveControlPin 3
 const byte buttonPins[] = {A0, A1, A2, 8, 9, 10, 11, 12};
 
+/* pin enumerations */
 typedef enum buttons_in {
 	bt_none  = 0b0,
 	bt_back  = 0b1,
@@ -56,6 +57,7 @@ typedef enum buttons_in {
 #define ROWS 2
 #define COLS 16
 
+/* LCD idler class */
 class LCD_idler {
 private:
 	uint8_t tx_buffer[2][COLS + 1];
@@ -71,9 +73,5 @@ extern LCD_idler lcdi;
 
 const char * printTime();
 void setup_rtc(Time tm);
-
-//void setup_analog_comparator();
-//boolean service_trigger();
-//void analog_read(uint8_t analog_pin);
 
 #endif /* SETUP_H_ */
